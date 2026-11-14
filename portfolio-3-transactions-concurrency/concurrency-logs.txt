@@ -1,0 +1,24 @@
+Concurrency Control & Deadlock Simulation Logs
+
+Test Scenario 1: Concurrent Checkouts on Limited Inventory (Stock = 1)
+----------------------------------------------------------------------
+[Transaction A] BEGIN;
+[Transaction A] SELECT stock_quantity FROM products WHERE product_id = 502 FOR UPDATE; 
+-> Acquired exclusive row lock. Stock = 1.
+[Transaction B] BEGIN;
+[Transaction B] SELECT stock_quantity FROM products WHERE product_id = 502 FOR UPDATE; 
+-> Blocked waiting for lock release by Transaction A.
+[Transaction A] UPDATE products SET stock_quantity = stock_quantity - 1 WHERE product_id = 502;
+[Transaction A] COMMIT;
+-> Row lock released.
+[Transaction B] Unblocked. Fetched updated stock = 0.
+[Transaction B] Notice: Insufficient stock. ROLLBACK executed successfully.
+
+Test Scenario 2: Deadlock Detection and Resolution
+--------------------------------------------------
+[Process 1] UPDATED orders SET order_status = 'Processing' WHERE order_id = 101; (Holding lock on Order 101)
+[Process 2] UPDATED payments SET payment_status = 'Verified' WHERE payment_id = 55; (Holding lock on Payment 55)
+[Process 1] UPDATED payments SET payment_status = 'Verified' WHERE payment_id = 55; -> Waiting for Process 2.
+[Process 2] UPDATED orders SET order_status = 'Processing' WHERE order_id = 101; -> Deadlock detected!
+PostgreSQL Engine Action: Aborted Process 2 with error: ERROR: deadlock detected.
+Resolution: Re-ordered application lock acquisition sequence to always acquire orders lock before payments lock.
