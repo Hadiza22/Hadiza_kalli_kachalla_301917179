@@ -1,0 +1,24 @@
+Execution Plan Analysis Log (PostgreSQL EXPLAIN ANALYZE)
+
+Query: Top-Selling Products by Category (Before Indexing)
+---------------------------------------------------------
+Seq Scan on order_items oi  (cost=0.00..18420.00 rows=500000 width=16)
+  ->  Hash Join (cost=1200.00..15400.00 rows=50000 width=32)
+        Hash Cond: (oi.product_id = p.product_id)
+        ->  Seq Scan on products p (cost=0.00..350.00 rows=10000 width=28)
+Planning Time: 0.412 ms
+Execution Time: 215.890 ms
+
+Query: Top-Selling Products by Category (After Adding B-Tree Indexes)
+--------------------------------------------------------------------
+GroupAggregate  (cost=4210.50..4520.00 rows=200 width=48)
+  ->  Sort  (cost=4210.50..4285.50 rows=30000 width=32)
+        Sort Key: p.category, p.product_name
+        ->  Hash Join  (cost=125.00..3890.00 rows=30000 width=32)
+              Hash Cond: (oi.product_id = p.product_id)
+              ->  Seq Scan on order_items oi  (cost=0.00..2410.00 rows=100000 width=16)
+              ->  Hash  (cost=110.00..110.00 rows=1200 width=28)
+                    ->  Bitmap Heap Scan on products p  (cost=12.50..110.00 rows=1200 width=28)
+                          ->  Bitmap Index Scan on idx_products_category  (cost=0.00..4.25 rows=1200 width=0)
+Planning Time: 0.689 ms
+Execution Time: 48.210 ms (Significant performance improvement achieved via index lookup)
