@@ -1,0 +1,23 @@
+{
+  "cluster_name": "apex-global-cluster",
+  "architecture_type": "Leader-Follower with Sharding",
+  "primary_region": "af-south-1 (Cape Town)",
+  "read_replicas": [
+    "eu-west-1 (Ireland)",
+    "us-east-1 (N. Virginia)"
+  ],
+  "sharding_configuration": {
+    "shard_key": "customer_id",
+    "strategy": "Hashed Sharding",
+    "num_shards": 4
+  },
+  "consistency_model": {
+    "financial_ledger": "Strong Consistency (CP)",
+    "product_catalog": "Eventual Consistency (AP)"
+  },
+  "failover_settings": {
+    "automatic_failover": true,
+    "heartbeat_interval_ms": 2000,
+    "election_timeout_ms": 5000
+  }
+}
